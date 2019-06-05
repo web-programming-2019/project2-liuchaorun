@@ -12,7 +12,7 @@ function ajax(action,data,success_function,fail_function) {
     contentType: 'application/json',
     timeout: 2000,
     dataType: 'json',
-        url: 'http://127.0.0.1:5000/action='+action,
+        url: 'http://127.0.0.1:5000/user/'+action,
     method: 'post',
     data: JSON.stringify(data),
     success: success_function,
@@ -51,18 +51,18 @@ $(()=> {
                 password:$(password).val()
             };
             ajax(
-                'sign_up',
+                'signup',
                 data,
                 (response)=>{
-                    if(response.status.code===1){
+                    if(response.code===200){
                         alert('注册成功！');
                     }
                     else{
-                        alert(response.status.msg);
+                        alert(response.msg);
                     }
                 },
                 (response)=>{
-                    alert(response.status.msg);
+                    alert(response.msg);
                 }
             )
         }
@@ -87,15 +87,16 @@ $(()=> {
                 'login',
                 data,
                 (response)=>{
-                    if(response.status.code===1){
+                    if(response.code===200){
+                        localStorage.setItem('username', data.username);
                         location.href='./html/chatroom.html';
                     }
                     else{
-                        alert(response.status.msg);
+                        alert(response.msg);
                     }
                 },
                 (response)=>{
-                    alert(response.status.msg);
+                    alert(response.msg);
                 }
             )
         }

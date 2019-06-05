@@ -19,8 +19,8 @@
             <div class="name">
                 河图<i class="fontIco down"></i>
                 <ul class="managerBox">
-                    <li><a href="http://118.89.197.156:3001/html/change_password.html"><i class="fontIco lock"></i>修改密码</a></li>
-                    <li><a href="http://118.89.197.156:3001/" id="logout"><i class="fontIco logout"></i>退出登录</a></li>
+                    <li><a href="http://127.0.0.1:5000/static/html/change_password.html"><i class="fontIco lock"></i>修改密码</a></li>
+                    <li><a href="http://127.0.0.1:5000/" id="logout"><i class="fontIco logout"></i>退出登录</a></li>
                 </ul>
             </div>
         </div>
@@ -42,10 +42,7 @@
                 <input type="hidden" name="to_uid" id="to_uid" value="0">
                 <div class="faceBox fn-clear">
                     <div class="expression"></div>
-                    <!--<div class="chat_type" id="chat_type">群聊</div>-->
-                    <div class="chat_type" id="chat_file">
-                        <button type="button" id="file_btn">文件</button>
-                    </div>
+                    <!--<div class="chat_type" id="chat_file"><button type="button" id="file_btn">文件</button></div>-->
                     <div class="chat_type" id="chat_font">
                         字体<i class="fontIco down"></i>
                         <ul class="fontBox">
@@ -60,10 +57,7 @@
             </div>
         </div>
         <div class="chat_right">
-            <ul class="user_list" title="双击切换当前频道">
-                <li class="fn-clear selected"><em>频道</em></li>
-                <li class="fn-clear" data-id="1"><span><img src="../images/default.png" width="30" height="30" alt=""/></span><em>河图</em><small class="online" title="在线"></small></li>
-            </ul>
+            <ul class="user_list" title="点击切换当前频道"></ul>
         </div>
     </div>
 </div>
@@ -107,6 +101,23 @@
                 <button type="button" id="upload_face" class="btn btn-primary" style="position: absolute;right: 20px;">上传</button>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="addChannel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">添加频道</h4>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="channelText" style="width: 100%">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="add_channel()">确定</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
             </div>
         </div>

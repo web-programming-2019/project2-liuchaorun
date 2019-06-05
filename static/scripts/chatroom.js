@@ -1,6 +1,8 @@
 const socket = io();
 const [message_box,managerBox,name,message, warn_msg,user_face,user_list,file_btn,chat_font,fontBox,write_area,def,kai,song,font_size,sendFile,setFace,sub_btn,upload_file,upload_input_file,upload_file_process,upload_face,upload_input_face,upload_face_process]=
     ['#message_box','.managerBox', '.name','#message','#alert','#user_face','.user_list','#file_btn','#chat_font','.fontBox','.write_area','#default','#kai','#song','#font_size','#sendFile','#setFace','.sub_btn','#upload_file','#upload_input_file','#upload_file_process','#upload_face','#upload_input_face','#upload_face_process'];
+let currentChannel = '';
+
 function warning_msg(msg) {
     $(warn_msg)[0].innerText=msg;
     $(warn_msg).css('top','50%');
@@ -11,18 +13,38 @@ function warning_msg(msg) {
         1000
     );
 }
-function add_someone(name,face_url) {
-    let htmlData=
-        '<li class="fn-clear" data-id="1" id=' +
-        name+
-        '><span><img src=' +
-        face_url +
-        ' width="30" height="30" alt=""/></span><em>' +
-        name +
-        '</em><small class="online" title="在线"></small></li>';
-    $(user_list).append(htmlData);
+
+function changeChannel(channel) {
+    if (channel.id !== currentChannel) {
+        let data = {
+        leftRoom: currentChannel,
+        room: channel.id
+        };
+        socket.emit('changeChannel', data);
+        $(`#${currentChannel}`)[0].childNodes[1].className = 'offline';
+        $(`#${channel.id}`)[0].childNodes[1].className = 'online';
+        currentChannel = channel.id;
+    }
+
 }
 
+function add_all_channel(channel) {
+    $(user_list).empty();
+    $(user_list).append('<li class="fn-clear selected" onclick="show_channel()"><em>频道</em></li>');
+    currentChannel = channel[0];
+    for (let i = 0; i < channel.length; i++) {
+        $(user_list).append(`<li class="fn-clear" data-id="1" id=${channel[i]} onclick="changeChannel(${channel[i]})"> <small class=${i===0?"online":"offline"} title="在线"></small> <em>${channel[i]}</em> </li>`)
+    }
+}
+
+function show_channel() {
+    $('#addChannel').modal('show');
+}
+
+function add_channel() {
+    console.log($('#channelText').val());
+    socket.emit('add_channel', $('#channelText').val());
+}
 
 function send_msg(username,face_url) {
     let msg = $(message).val();
@@ -54,7 +76,7 @@ function add_msg(data) {
             + '</div></div></div>';
     }
     else{
-        let src = 'src="http://118.89.197.156:8000/files/'+data.msg+'"';
+        let src = 'src="http://127.0.0.1:5000/static/files/'+data.msg+'"';
         html_data =`<div class="msg_item fn-clear"><div class="face"><img src=${data.face_url} width="40" height="40"  alt=""/></div><div class="item_right"><div class="msg own"><a ${src}>${data.msg}</a></div><div class="name_time">${data.username} · ${data.time}</div></div></div>`;
     }
     $(message_box).append(html_data);
@@ -69,8 +91,7 @@ function ajax(action,data,success_function,fail_function) {
         contentType: 'application/json',
         timeout: 2000,
         dataType: 'json',
-        url: 'http://127.0.0.1:5000/action='+action,
-        //url: 'http://118.89.197.156:3001/action='+action,
+        url: 'http://127.0.0.1:5000/user/'+action,
         method: 'post',
         data: JSON.stringify(data),
         success: success_function,
@@ -88,7 +109,6 @@ function upload(action, $upload_input, success_function, error_function, $progre
                 withCredentials: true
             },
             url: 'http://127.0.0.1:5000/action='+action,
-            //url: 'http://118.89.197.156:3001/action='+action,
             method: 'post',
             data: formData,
             processData: false,
@@ -141,9 +161,11 @@ $(function () {
         }, ()=>{
             $(managerBox).stop(true, true).slideUp(100);
         });
+
     $(font_size).keydown((e)=> {
         digitInput(e);
     });
+
     $(font_size).blur(()=>{
         if(parseInt($(font_size).val())>32){
             $(font_size).val('');
@@ -153,19 +175,24 @@ $(function () {
             localStorage.setItem('font_size',$(font_size).val());
         }
     });
+
     $(def).click(()=>{
         $(write_area).css('font-family','');
         localStorage.setItem('font','');
     });
+
     $(song).click(()=>{
         $(write_area).css('font-family','AR PL UMing CN','宋体');
         localStorage.setItem('font','\'AR PL UMing CN\',\'宋体\'');
     });
+
     $(kai).click(()=>{
         $(write_area).css('font-family','AR PL UKai CN','楷体');
         localStorage.setItem('font','\'AR PL UKai CN\',\'楷体\'');
     });
+
     $(message_box).scrollTop($(message_box)[0].scrollHeight + 20);
+
     $(chat_font).hover(()=>{
             $(fontBox).css('top',$(chat_font).offset().top-90);
             $(fontBox).stop(true, true).slideDown(-100);
@@ -173,15 +200,19 @@ $(function () {
             $(fontBox).css('top',$(chat_font).offset().top-90);
             $(fontBox).stop(true, true).slideUp(-100);
         });
+
     $(file_btn).click(()=>{
         $(sendFile).modal('show');
     });
+
     $(user_face).click(()=>{
         $(setFace).modal('show');
     });
+
     $(sub_btn).click(()=>{
         send_msg(localStorage.getItem('username'),localStorage.getItem('face_url'));
     });
+
     $(message).keydown((event)=>{
         let e = window.event || event;
         let k = e.keyCode || e.which || e.charCode;
@@ -190,6 +221,7 @@ $(function () {
             send_msg(localStorage.getItem('username'),localStorage.getItem('face_url'));
         }
     });
+
     $(upload_file).click(()=>{
         upload('upload_file',$(upload_input_file),(response)=>{
             $(sendFile).modal('hide');
@@ -204,6 +236,7 @@ $(function () {
             warning_msg('请重试！');
         },$(upload_file_process));
     });
+
     $(upload_face).click(()=>{
         upload('upload_face',$(upload_input_face),(response)=>{
             $(setFace).modal('hide');
@@ -219,13 +252,17 @@ $(function () {
             warning_msg('请重试');
         },$(upload_face_process));
     });
-    ajax('get_info', {}, (response)=>{
-            if(response.status.code===1){
+
+    ajax('info', {
+        username: localStorage.getItem('username')
+    }, (response)=>{
+            if(response.code===200){
                 $(user_face)[0].src=response.data.face_url;
-                $(name).html(response.data.username+'<i class="fontIco down"></i>\n' +
+                $(name).html(
+                    response.data.username+'<i class="fontIco down"></i>\n' +
                     '                <ul class="managerBox">\n' +
-                    '                    <li><a href="http://118.89.197.156:3001/html/change_password.html" ><i class="fontIco lock"></i>修改密码</a></li>\n' +
-                    '                    <li><a href="http://118.89.197.156:3001/"><i class="fontIco logout"></i>退出登录</a></li>\n' +
+                    '                    <li><a href="http://127.0.0.1:5000/html/change_password.html" ><i class="fontIco lock"></i>修改密码</a></li>\n' +
+                    '                    <li><a href="http://127.0.0.1:5000/"><i class="fontIco logout"></i>退出登录</a></li>\n' +
                     '                </ul>');
                 let data={
                     username:response.data.username,
@@ -233,7 +270,6 @@ $(function () {
                 };
                 localStorage.setItem('username',data.username);
                 localStorage.setItem('face_url',data.face_url);
-                socket.emit('join',data);
             }
             else{
                 warning_msg(response.status.msg)
@@ -243,32 +279,22 @@ $(function () {
         });
 });
 
-socket.on('add_someone',(data)=>{
-    add_someone(data.username,data.face_url);
+socket.on('allChannel',(channel)=>{
+    console.log(channel);
+    add_all_channel(channel);
 });
 
-socket.on('get_msg',(data)=>{
+socket.on('msg',(data)=>{
     add_msg(data);
 });
 
-socket.on('del_someone',(username)=>{
-    $('#'+username).remove();
+socket.on('appendChannel', (channel) => {
+    $(user_list).append(`<li class="fn-clear" data-id="1" id=${channel} onclick="changeChannel(${channel})"> <small class="offline" title="在线"></small> <em>${channel}</em> </li>`)
 });
 
-socket.on('add_online_people',(data)=>{
-    let user = Object.values(data);
-    for(let i of user){
-        add_someone(i.username,i.face_url);
+socket.on('changeChannelMessage', (messages) => {
+    $(message_box).empty();
+    for (let m of messages) {
+        add_msg(JSON.parse(m));
     }
-});
-
-socket.on('someone_change_face',(data)=>{
-    ($('#'+data.username)[0].children[0].children[0]).src=data.face_url;
-});
-
-socket.on('other_login',(data)=>{
-   warning_msg('你已在别处登录！');
-   setTimeout(()=>{
-       location.href = '../index.html';
-   },2000);
 });
