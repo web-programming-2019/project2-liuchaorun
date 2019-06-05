@@ -77,6 +77,11 @@ def user_info():
         return returns(1, {}, 'params lack')
 
 
+@app.route('/upload/image', methods=['post'])
+def upload_image():
+    return ''
+
+
 channel = ['chatroom1', 'chatroom2']
 users = {}
 

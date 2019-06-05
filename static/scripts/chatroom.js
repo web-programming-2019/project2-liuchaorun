@@ -1,7 +1,6 @@
 const socket = io();
 const [message_box,managerBox,name,message, warn_msg,user_face,user_list,file_btn,chat_font,fontBox,write_area,def,kai,song,font_size,sendFile,setFace,sub_btn,upload_file,upload_input_file,upload_file_process,upload_face,upload_input_face,upload_face_process]=
     ['#message_box','.managerBox', '.name','#message','#alert','#user_face','.user_list','#file_btn','#chat_font','.fontBox','.write_area','#default','#kai','#song','#font_size','#sendFile','#setFace','.sub_btn','#upload_file','#upload_input_file','#upload_file_process','#upload_face','#upload_input_face','#upload_face_process'];
-let currentChannel = '';
 
 function warning_msg(msg) {
     $(warn_msg)[0].innerText=msg;
@@ -15,15 +14,15 @@ function warning_msg(msg) {
 }
 
 function changeChannel(channel) {
-    if (channel.id !== currentChannel) {
+    if (channel.id !== localStorage.getItem('currentChannel')) {
         let data = {
-        leftRoom: currentChannel,
-        room: channel.id
+            leftRoom: localStorage.getItem('currentChannel'),
+            room: channel.id
         };
         socket.emit('changeChannel', data);
-        $(`#${currentChannel}`)[0].childNodes[1].className = 'offline';
+        $(`#${localStorage.getItem('currentChannel')}`)[0].childNodes[1].className = 'offline';
         $(`#${channel.id}`)[0].childNodes[1].className = 'online';
-        currentChannel = channel.id;
+        localStorage.setItem('currentChannel', channel.id);
     }
 
 }
@@ -31,9 +30,18 @@ function changeChannel(channel) {
 function add_all_channel(channel) {
     $(user_list).empty();
     $(user_list).append('<li class="fn-clear selected" onclick="show_channel()"><em>频道</em></li>');
-    currentChannel = channel[0];
     for (let i = 0; i < channel.length; i++) {
-        $(user_list).append(`<li class="fn-clear" data-id="1" id=${channel[i]} onclick="changeChannel(${channel[i]})"> <small class=${i===0?"online":"offline"} title="在线"></small> <em>${channel[i]}</em> </li>`)
+        $(user_list).append(`<li class="fn-clear" data-id="1" id=${channel[i]} onclick="changeChannel(${channel[i]})"> <small class="offline" title="在线"></small> <em>${channel[i]}</em> </li>`)
+    }
+    if (localStorage.getItem('currentChannel')) {
+        $(`#${localStorage.getItem('currentChannel')}`)[0].childNodes[1].className = 'online';
+        let data = {
+            leftRoom: channel[0],
+            room: localStorage.getItem('currentChannel')
+        };
+        socket.emit('changeChannel', data);
+    } else {
+        localStorage.setItem('currentChannel', channel[0]);
     }
 }
 
