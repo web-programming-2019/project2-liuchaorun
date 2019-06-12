@@ -42,6 +42,7 @@ function add_all_channel(channel) {
         socket.emit('changeChannel', data);
     } else {
         localStorage.setItem('currentChannel', channel[0]);
+         $(`#${localStorage.getItem('currentChannel')}`)[0].childNodes[1].className = 'online';
     }
 }
 
@@ -302,7 +303,7 @@ socket.on('appendChannel', (channel) => {
 
 socket.on('changeChannelMessage', (messages) => {
     $(message_box).empty();
-    for (let m of messages) {
-        add_msg(JSON.parse(m));
+    for (let i = messages.length - 1; i >= 0; i--) {
+        add_msg(JSON.parse(messages[i]))
     }
 });
